@@ -32,6 +32,7 @@ public class PhotosActivity extends AppCompatActivity {
 
                 Intent i = new Intent(getApplicationContext(), FullImageActivity.class);
                 i.putExtra("id", position);
+                i.putExtra("folderPosition", int_position);
                 i.putExtra("abc",abc);
                 startActivity(i);
             }

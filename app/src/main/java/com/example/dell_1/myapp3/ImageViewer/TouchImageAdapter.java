@@ -19,14 +19,15 @@ class TouchImageAdapter extends PagerAdapter {
     ArrayList<Model_images> al_menu = new ArrayList<>();
     int position,int_position;
 
-    public TouchImageAdapter(Context context,ArrayList<Model_images> al_menu){
+    public TouchImageAdapter(Context context,ArrayList<Model_images> al_menu, int position){
         this.al_menu = al_menu;
         this.context = context;
+        this.int_position = position;
     }
 
     @Override
     public int getCount() {
-        return al_menu.size();
+        return al_menu.get(int_position).getAl_imagepath().size();
     }
 
     @Override

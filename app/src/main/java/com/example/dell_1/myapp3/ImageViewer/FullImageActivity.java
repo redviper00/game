@@ -15,6 +15,7 @@ import static com.example.dell_1.myapp3.ImageViewer.ImageGallery.al_images;
 public class FullImageActivity extends AppCompatActivity {
     ImageView images;
     int position;
+    int folderPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +27,7 @@ public class FullImageActivity extends AppCompatActivity {
 
         // Selected image id
         position = i.getExtras().getInt("id");
+        folderPosition = i.getExtras().getInt("folderPosition");
         Bundle extras = getIntent().getExtras();
         String value = extras.getString("abc");
 
@@ -35,7 +37,7 @@ public class FullImageActivity extends AppCompatActivity {
                 .into(images);
 
         ViewPager mViewPager = (ViewPager) findViewById(R.id.viewpager);
-        mViewPager.setAdapter(new TouchImageAdapter(this,al_images));
-        mViewPager.setCurrentItem(0);
+        mViewPager.setAdapter(new TouchImageAdapter(this,al_images, folderPosition));
+        mViewPager.setCurrentItem(position);
     }
 }
