@@ -9,6 +9,7 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.example.dell_1.myapp3.R;
+import com.github.chrisbanes.photoview.PhotoView;
 
 import static com.example.dell_1.myapp3.ImageViewer.ImageGallery.al_images;
 
@@ -22,8 +23,8 @@ public class FullImageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_full_image);
         Intent i = getIntent();
-        images = (ImageView) findViewById(R.id.fullImage);
-        images.setVisibility(View.GONE);
+        PhotoView photoView = (PhotoView) findViewById(R.id.photo_view);
+        photoView.setVisibility(View.GONE);
 
         // Selected image id
         position = i.getExtras().getInt("id");
