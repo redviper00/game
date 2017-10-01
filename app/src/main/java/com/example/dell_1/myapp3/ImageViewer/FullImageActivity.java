@@ -35,7 +35,7 @@ public class FullImageActivity extends AppCompatActivity {
         Glide.with(FullImageActivity.this)
                 .load(value)
                 .skipMemoryCache(false)
-                .into(images);
+                .into(photoView);
 
         ViewPager mViewPager = (ViewPager) findViewById(R.id.viewpager);
         mViewPager.setAdapter(new TouchImageAdapter(this,al_images, folderPosition));
