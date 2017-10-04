@@ -11,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.github.chrisbanes.photoview.PhotoView;
+
 import java.util.ArrayList;
 
 class TouchImageAdapter extends PagerAdapter {
@@ -33,7 +35,7 @@ class TouchImageAdapter extends PagerAdapter {
     @Override
     public View instantiateItem(ViewGroup container, int position) {
 
-        ImageView img = new ImageView(container.getContext());
+        PhotoView img = new PhotoView(container.getContext());
         ViewGroup.LayoutParams lp= new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         img.setLayoutParams(lp);
         img.setImageDrawable(getImageFromSdCard(filename,position));

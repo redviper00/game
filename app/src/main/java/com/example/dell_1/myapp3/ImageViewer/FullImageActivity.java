@@ -23,19 +23,13 @@ public class FullImageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_full_image);
         Intent i = getIntent();
-        PhotoView photoView = (PhotoView) findViewById(R.id.photo_view);
-        photoView.setVisibility(View.GONE);
 
         // Selected image id
         position = i.getExtras().getInt("id");
         folderPosition = i.getExtras().getInt("folderPosition");
         Bundle extras = getIntent().getExtras();
-        String value = extras.getString("abc");
-
-        Glide.with(FullImageActivity.this)
-                .load(value)
-                .skipMemoryCache(false)
-                .into(photoView);
+        // TODO : check if it require
+//        String value = extras.getString("abc");
 
         ViewPager mViewPager = (ViewPager) findViewById(R.id.viewpager);
         mViewPager.setAdapter(new TouchImageAdapter(this,al_images, folderPosition));
