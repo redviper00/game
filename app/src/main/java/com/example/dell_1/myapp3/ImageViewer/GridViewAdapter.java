@@ -22,19 +22,18 @@ public class GridViewAdapter extends ArrayAdapter<Model_images> {
     ArrayList<Model_images> al_menu = new ArrayList<>();
     int int_position;
 
-
-    public GridViewAdapter(Context context, ArrayList<Model_images> al_menu,int int_position) {
+    public GridViewAdapter(Context context, ArrayList<Model_images> al_menu,int position) {
         super(context, R.layout.activity_adapter__photos_folder, al_menu);
         this.al_menu = al_menu;
         this.context = context;
-        this.int_position = int_position;
+        this.int_position = position;
     }
 
     @Override
     public int getCount() {
 
-        Log.e("ADAPTER LIST SIZE", al_menu.get(int_position).getAl_imagepath().size() + "");
-        return al_menu.get(int_position).getAl_imagepath().size();
+        Log.e("ADAPTER LIST SIZE", al_menu.size() + "");
+        return al_menu.size();
     }
 
     @Override
@@ -44,7 +43,7 @@ public class GridViewAdapter extends ArrayAdapter<Model_images> {
 
     @Override
     public int getViewTypeCount() {
-        if (al_menu.get(int_position).getAl_imagepath().size() > 0) {
+        if (al_menu.size() > 0) {
             return al_menu.get(int_position).getAl_imagepath().size();
         } else {
             return 1;
@@ -68,7 +67,6 @@ public class GridViewAdapter extends ArrayAdapter<Model_images> {
             viewHolder.tv_foldersize = (TextView) convertView.findViewById(R.id.tv_folder2);
             viewHolder.iv_image = (ImageView) convertView.findViewById(R.id.iv_image);
 
-
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
@@ -76,7 +74,6 @@ public class GridViewAdapter extends ArrayAdapter<Model_images> {
 
         viewHolder.tv_foldern.setVisibility(View.GONE);
         viewHolder.tv_foldersize.setVisibility(View.GONE);
-
 
 
         Glide.with(context).load("file://" + al_menu.get(int_position).getAl_imagepath().get(position))

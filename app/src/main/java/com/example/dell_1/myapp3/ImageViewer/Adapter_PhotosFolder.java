@@ -20,12 +20,14 @@ public class Adapter_PhotosFolder extends ArrayAdapter<Model_images> {
     Context context;
     ViewHolder viewHolder;
     ArrayList<Model_images> al_menu = new ArrayList<>();
+    int int_position;
 
 
-    public Adapter_PhotosFolder(Context context, ArrayList<Model_images> al_menu) {
+    public Adapter_PhotosFolder(Context context, ArrayList<Model_images> al_menu,int position) {
         super(context, R.layout.activity_adapter__photos_folder, al_menu);
         this.al_menu = al_menu;
         this.context = context;
+        this.int_position=position;
     }
 
     @Override

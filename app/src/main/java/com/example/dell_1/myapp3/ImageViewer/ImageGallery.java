@@ -1,23 +1,28 @@
 package com.example.dell_1.myapp3.ImageViewer;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.example.dell_1.myapp3.R;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class ImageGallery extends AppCompatActivity {
@@ -26,12 +31,26 @@ public class ImageGallery extends AppCompatActivity {
     Adapter_PhotosFolder obj_adapter;
     GridView gv_folder;
     private static final int REQUEST_PERMISSIONS = 100;
+    int int_position;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_gallery);
-        gv_folder = (GridView)findViewById(R.id.gv_folder);
+        gv_folder = (GridView) findViewById(android.R.id.list);
+        obj_adapter = new Adapter_PhotosFolder(this,al_images,int_position);
+        gv_folder.setAdapter(obj_adapter);
+
+        final ImageButton button1 = (ImageButton) findViewById(R.id.button1);
+        final ImageButton button2 = (ImageButton) findViewById(R.id.button2);
+        final ImageButton button3 = (ImageButton) findViewById(R.id.button3);
+        final ImageButton button4 = (ImageButton) findViewById(R.id.button4);
+        final ImageButton button5 = (ImageButton) findViewById(R.id.button5);
+        button1.setVisibility(View.GONE);
+        button2.setVisibility(View.GONE);
+        button3.setVisibility(View.GONE);
+        button4.setVisibility(View.GONE);
+        button5.setVisibility(View.GONE);
 
         gv_folder.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -39,6 +58,55 @@ public class ImageGallery extends AppCompatActivity {
                 Intent intent = new Intent(getApplicationContext(), PhotosActivity.class);
                 intent.putExtra("value",i);
                 startActivity(intent);
+            }
+        });
+
+        gv_folder.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view,final int i, long l) {
+                for (int j = 0; j < adapterView.getChildCount(); j++)
+                    adapterView.getChildAt(j).setBackgroundColor(Color.TRANSPARENT);
+
+                // change the background color of the selected element
+                view.setBackgroundColor(Color.LTGRAY);
+                button1.setVisibility(View.VISIBLE);
+                button2.setVisibility(View.VISIBLE);
+                button3.setVisibility(View.VISIBLE);
+                button4.setVisibility(View.VISIBLE);
+                button5.setVisibility(View.VISIBLE);
+                button3.setOnClickListener(
+                        new View.OnClickListener() {
+                            public void onClick(View view) {
+                                AlertDialog.Builder builder1 = new AlertDialog.Builder(ImageGallery.this);
+                                builder1.setMessage("Are you sure you want to delete it ?");
+                                builder1.setCancelable(true);
+
+                                builder1.setPositiveButton(
+                                        "Yes",
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                File file = new File(al_images.get(int_position).getAl_imagepath().get(i));
+                                                file.delete();
+                                                al_images.remove(i);
+                                                obj_adapter.notifyDataSetChanged();
+                                                finish();
+                                            }
+                                        });
+
+                                builder1.setNegativeButton(
+                                        "No",
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                dialog.cancel();
+                                            }
+                                        });
+
+                                AlertDialog alert11 = builder1.create();
+                                alert11.show();
+                            }
+                        });
+
+                return true;
             }
         });
 
@@ -123,7 +191,7 @@ public class ImageGallery extends AppCompatActivity {
                 Log.e("FILE", al_images.get(i).getAl_imagepath().get(j));
             }
         }
-        obj_adapter = new Adapter_PhotosFolder(getApplicationContext(),al_images);
+        obj_adapter = new Adapter_PhotosFolder(getApplicationContext(),al_images,int_position);
         gv_folder.setAdapter(obj_adapter);
         return al_images;
     }
