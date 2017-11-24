@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -87,6 +88,13 @@ public class ImageGallery extends AppCompatActivity {
                                             public void onClick(DialogInterface dialog, int id) {
                                                 File file = new File(al_images.get(int_position).getAl_imagepath().get(i));
                                                 file.delete();
+                                                MediaScannerConnection.scanFile(ImageGallery.this,new String[] { file.toString() }, null,
+                                                        new MediaScannerConnection.OnScanCompletedListener() {
+                                                            public void onScanCompleted(String path, Uri uri) {
+                                                                Log.i("ExternalStorage", "Scanned " + path + ":");
+                                                                Log.i("ExternalStorage", "-> uri=" + uri);
+                                                            }
+                                                        });
                                                 al_images.remove(i);
                                                 obj_adapter.notifyDataSetChanged();
                                                 finish();

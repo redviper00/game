@@ -50,7 +50,6 @@ public class PhotosActivity extends AppCompatActivity {
         int_position = getIntent().getIntExtra("value", 0);
         adapter = new GridViewAdapter(this, al_images, int_position);
         gridView.setAdapter(adapter);
-        fn_imagespath();
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -89,7 +88,7 @@ public class PhotosActivity extends AppCompatActivity {
                                         "Yes",
                                         new DialogInterface.OnClickListener() {
                                             public void onClick(DialogInterface dialog, int id) {
-                                                File file = new File( al_menu.get(int_position).getAl_imagepath().get(position));
+                                                File file = new File(al_images.get(int_position).getAl_imagepath().get(position));
                                                 file.delete();
                                                 MediaScannerConnection.scanFile(PhotosActivity.this,new String[] { file.toString() }, null,
                                                         new MediaScannerConnection.OnScanCompletedListener() {
@@ -98,7 +97,7 @@ public class PhotosActivity extends AppCompatActivity {
                                                                 Log.i("ExternalStorage", "-> uri=" + uri);
                                                             }
                                                         });
-                                                al_menu.remove(position);
+                                                al_images.remove(position);
                                                 adapter.notifyDataSetChanged();
                                                 finish();
                                             }
