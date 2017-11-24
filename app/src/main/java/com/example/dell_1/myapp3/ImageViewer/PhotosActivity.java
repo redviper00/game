@@ -50,7 +50,7 @@ public class PhotosActivity extends AppCompatActivity {
         int_position = getIntent().getIntExtra("value", 0);
         adapter = new GridViewAdapter(this, al_images, int_position);
         gridView.setAdapter(adapter);
-        fn_imagespath();
+//        fn_imagespath();
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
