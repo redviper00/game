@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
@@ -24,10 +25,15 @@ import android.widget.Toast;
 import com.example.dell_1.myapp3.R;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 
 public class ImageGallery extends AppCompatActivity {
     public static ArrayList<Model_images> al_images = new ArrayList<>();
+    ArrayList<Integer> selectedImages = new ArrayList<>();
     boolean boolean_folder;
     Adapter_PhotosFolder obj_adapter;
     GridView gv_folder;
@@ -39,42 +45,76 @@ public class ImageGallery extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_gallery);
         gv_folder = (GridView) findViewById(android.R.id.list);
-        obj_adapter = new Adapter_PhotosFolder(this,al_images,int_position);
+        obj_adapter = new Adapter_PhotosFolder(this, al_images, int_position);
         gv_folder.setAdapter(obj_adapter);
 
-        final ImageButton button1 = (ImageButton) findViewById(R.id.button1);
+        final ImageButton buttonpaste = (ImageButton) findViewById(R.id.buttonpaste);
+        buttonpaste.setVisibility(View.GONE);
+        if (getIntent().getParcelableExtra("selected_images") != null)
+            selectedImages = getIntent().getParcelableExtra("selected_images");
+        new LongOperation().execute();
+
+        final ImageButton buttoncut = (ImageButton) findViewById(R.id.button1);
         final ImageButton button2 = (ImageButton) findViewById(R.id.button2);
         final ImageButton button3 = (ImageButton) findViewById(R.id.button3);
         final ImageButton button4 = (ImageButton) findViewById(R.id.button4);
         final ImageButton button5 = (ImageButton) findViewById(R.id.button5);
-        button1.setVisibility(View.GONE);
+        buttoncut.setVisibility(View.GONE);
         button2.setVisibility(View.GONE);
         button3.setVisibility(View.GONE);
         button4.setVisibility(View.GONE);
         button5.setVisibility(View.GONE);
 
-        gv_folder.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        gv_folder.setOnItemClickListener(new AdapterView.OnItemClickListener()
+
+        {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = new Intent(getApplicationContext(), PhotosActivity.class);
-                intent.putExtra("value",i);
+                intent.putExtra("value", i);
                 startActivity(intent);
             }
         });
 
-        gv_folder.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+        gv_folder.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener()
+
+        {
             @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view,final int i, long l) {
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, final int i, long l) {
                 for (int j = 0; j < adapterView.getChildCount(); j++)
                     adapterView.getChildAt(j).setBackgroundColor(Color.TRANSPARENT);
 
                 // change the background color of the selected element
                 view.setBackgroundColor(Color.LTGRAY);
-                button1.setVisibility(View.VISIBLE);
+                buttoncut.setVisibility(View.VISIBLE);
                 button2.setVisibility(View.VISIBLE);
                 button3.setVisibility(View.VISIBLE);
                 button4.setVisibility(View.VISIBLE);
                 button5.setVisibility(View.VISIBLE);
+                buttoncut.setOnClickListener(
+                        new View.OnClickListener() {
+                            public void onClick(View view) {
+                                buttoncut.setVisibility(View.GONE);
+                                button2.setVisibility(View.GONE);
+                                button3.setVisibility(View.GONE);
+                                button4.setVisibility(View.GONE);
+                                button5.setVisibility(View.GONE);
+                                buttonpaste.setVisibility(View.VISIBLE);
+                            }
+
+                        });
+                button2.setOnClickListener(
+                        new View.OnClickListener() {
+                            public void onClick(View view) {
+                                buttoncut.setVisibility(View.GONE);
+                                button2.setVisibility(View.GONE);
+                                button3.setVisibility(View.GONE);
+                                button4.setVisibility(View.GONE);
+                                button5.setVisibility(View.GONE);
+                                buttonpaste.setVisibility(View.VISIBLE);
+                            }
+
+                        });
                 button3.setOnClickListener(
                         new View.OnClickListener() {
                             public void onClick(View view) {
@@ -88,7 +128,7 @@ public class ImageGallery extends AppCompatActivity {
                                             public void onClick(DialogInterface dialog, int id) {
                                                 File file = new File(al_images.get(int_position).getAl_imagepath().get(i));
                                                 file.delete();
-                                                MediaScannerConnection.scanFile(ImageGallery.this,new String[] { file.toString() }, null,
+                                                MediaScannerConnection.scanFile(ImageGallery.this, new String[]{file.toString()}, null,
                                                         new MediaScannerConnection.OnScanCompletedListener() {
                                                             public void onScanCompleted(String path, Uri uri) {
                                                                 Log.i("ExternalStorage", "Scanned " + path + ":");
@@ -118,25 +158,32 @@ public class ImageGallery extends AppCompatActivity {
             }
         });
 
-        if ((ContextCompat.checkSelfPermission(getApplicationContext(),
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(getApplicationContext(),
-                Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)) {
+        if ((ContextCompat.checkSelfPermission(
+
+                getApplicationContext(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) && (ContextCompat.checkSelfPermission(
+                getApplicationContext(),
+                Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED))
+
+        {
             if ((ActivityCompat.shouldShowRequestPermissionRationale(ImageGallery.this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) && (ActivityCompat.shouldShowRequestPermissionRationale( ImageGallery.this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) && (ActivityCompat.shouldShowRequestPermissionRationale(ImageGallery.this,
                     Manifest.permission.READ_EXTERNAL_STORAGE))) {
 
             } else {
-                ActivityCompat.requestPermissions( ImageGallery.this,
+                ActivityCompat.requestPermissions(ImageGallery.this,
                         new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
                         REQUEST_PERMISSIONS);
             }
-        }else {
-            Log.e("Else","Else");
+        } else
+
+        {
+            Log.e("Else", "Else");
             fn_imagespath();
         }
     }
 
-    public ArrayList<Model_images> fn_imagespath() {
+        public ArrayList<Model_images> fn_imagespath() {
         al_images.clear();
 
         int int_position = 0;
@@ -186,13 +233,8 @@ public class ImageGallery extends AppCompatActivity {
 
                 al_images.add(obj_model);
 
-
             }
-
-
         }
-
-
         for (int i = 0; i < al_images.size(); i++) {
             Log.e("FOLDER", al_images.get(i).getStr_folder());
             for (int j = 0; j < al_images.get(i).getAl_imagepath().size(); j++) {
@@ -221,4 +263,44 @@ public class ImageGallery extends AppCompatActivity {
         }
     }
 
+    private class LongOperation extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            for (int image : selectedImages) {
+                File sourceImage = new File(al_images.get(int_position).getAl_imagepath().get(image)); //returns the image File from model class to be moved.
+                File destinationImage = new File(al_images.get(int_position).getStr_folder(), ".jpeg");
+
+                try {
+                    copyOrMoveFile(sourceImage, destinationImage,true);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {}
+
+    }
+
+    //Method to move the file
+    private void copyOrMoveFile(File file, File dir,boolean isCopy) throws IOException {
+        File newFile = new File(dir, file.getName());
+        FileChannel outChannel = null;
+        FileChannel inputChannel = null;
+        try {
+            outChannel = new FileOutputStream(newFile).getChannel();
+            inputChannel = new FileInputStream(file).getChannel();
+            inputChannel.transferTo(0, inputChannel.size(), outChannel);
+            inputChannel.close();
+            if(!isCopy)
+                file.delete();
+        } finally {
+            if (inputChannel != null) inputChannel.close();
+            if (outChannel != null) outChannel.close();
+        }
+    }
 }

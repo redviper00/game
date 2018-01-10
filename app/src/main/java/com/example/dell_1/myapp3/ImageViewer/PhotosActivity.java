@@ -1,10 +1,10 @@
 package com.example.dell_1.myapp3.ImageViewer;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -12,13 +12,13 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageButton;
 
 import com.example.dell_1.myapp3.R;
 
-import java.io.File;
 import java.util.ArrayList;
 
 import static com.example.dell_1.myapp3.ImageViewer.ImageGallery.al_images;
@@ -28,6 +28,7 @@ public class PhotosActivity extends AppCompatActivity {
     private GridView gridView;
     GridViewAdapter adapter;
     ArrayList<Model_images> al_menu = new ArrayList<>();
+    private ArrayList<Integer> mSelected = new ArrayList<>();
     boolean boolean_folder;
 
     @Override
@@ -35,25 +36,26 @@ public class PhotosActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_gallery);
 
-        final ImageButton button1 = (ImageButton) findViewById(R.id.button1);
+        final ImageButton buttoncut = (ImageButton) findViewById(R.id.button1);
         final ImageButton button2 = (ImageButton) findViewById(R.id.button2);
         final ImageButton button3 = (ImageButton) findViewById(R.id.button3);
         final ImageButton button4 = (ImageButton) findViewById(R.id.button4);
         final ImageButton button5 = (ImageButton) findViewById(R.id.button5);
-        button1.setVisibility(View.GONE);
+        final ImageButton buttonpaste = (ImageButton) findViewById(R.id.buttonpaste);
+        buttoncut.setVisibility(View.GONE);
         button2.setVisibility(View.GONE);
         button3.setVisibility(View.GONE);
         button4.setVisibility(View.GONE);
         button5.setVisibility(View.GONE);
+        buttonpaste.setVisibility(View.GONE);
+
 
         gridView = (GridView) findViewById(android.R.id.list);
+
         int_position = getIntent().getIntExtra("value", 0);
         adapter = new GridViewAdapter(this, al_images, int_position);
+        gridView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
         gridView.setAdapter(adapter);
-<<<<<<< HEAD
-=======
-//        fn_imagespath();
->>>>>>> 51b43b833c7a11cbcc8f204c914687923d5fff2f
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -70,17 +72,50 @@ public class PhotosActivity extends AppCompatActivity {
 
         gridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-                for (int j = 0; j < parent.getChildCount(); j++)
-                    parent.getChildAt(j).setBackgroundColor(Color.TRANSPARENT);
+            public boolean onItemLongClick(final AdapterView<?> parent, View view, final int position, long id) {
+                if (mSelected.contains(position)) {
+                    mSelected.remove(position);
+                    view.setBackgroundColor(Color.TRANSPARENT);// remove item from list
+                    // update view (v) state here
+                    // eg: remove highlight
+                } else {
+                    mSelected.add(position);
+                    view.setBackgroundColor(Color.LTGRAY);// add item to list
+                    // update view (v) state here
+                    // eg: add highlight
+                }
 
-                // change the background color of the selected element
-                view.setBackgroundColor(Color.LTGRAY);
-                button1.setVisibility(View.VISIBLE);
+                buttoncut.setVisibility(View.VISIBLE);
                 button2.setVisibility(View.VISIBLE);
                 button3.setVisibility(View.VISIBLE);
                 button4.setVisibility(View.VISIBLE);
                 button5.setVisibility(View.VISIBLE);
+                buttoncut.setOnClickListener(
+                        new View.OnClickListener() {
+                            public void onClick(View view) {
+                                buttoncut.setVisibility(View.GONE);
+                                button2.setVisibility(View.GONE);
+                                button3.setVisibility(View.GONE);
+                                button4.setVisibility(View.GONE);
+                                button5.setVisibility(View.GONE);
+                                Intent moveIntent = new Intent(PhotosActivity.this, ImageGallery.class);
+                                moveIntent.putExtra("selected_images", mSelected);
+                                startActivity(moveIntent);
+                            }
+                        });
+
+                button2.setOnClickListener(
+                        new View.OnClickListener() {
+                            public void onClick(View view) {
+                                buttoncut.setVisibility(View.GONE);
+                                button2.setVisibility(View.GONE);
+                                button3.setVisibility(View.GONE);
+                                button4.setVisibility(View.GONE);
+                                button5.setVisibility(View.GONE);
+
+                            }
+
+                        });
                 button3.setOnClickListener(
                         new View.OnClickListener() {
                             public void onClick(View view) {
@@ -92,17 +127,10 @@ public class PhotosActivity extends AppCompatActivity {
                                         "Yes",
                                         new DialogInterface.OnClickListener() {
                                             public void onClick(DialogInterface dialog, int id) {
-                                                File file = new File(al_images.get(int_position).getAl_imagepath().get(position));
-                                                file.delete();
-                                                MediaScannerConnection.scanFile(PhotosActivity.this,new String[] { file.toString() }, null,
-                                                        new MediaScannerConnection.OnScanCompletedListener() {
-                                                            public void onScanCompleted(String path, Uri uri) {
-                                                                Log.i("ExternalStorage", "Scanned " + path + ":");
-                                                                Log.i("ExternalStorage", "-> uri=" + uri);
-                                                            }
-                                                        });
-                                                al_images.remove(position);
-                                                adapter.notifyDataSetChanged();
+                                                adapter.updateUpdater(mSelected);
+                                                for (int position = 0; position < mSelected.size(); position++) {
+                                                    al_images.get(int_position).getAl_imagepath().remove(position);
+                                                }
                                                 finish();
                                             }
                                         });
@@ -124,6 +152,7 @@ public class PhotosActivity extends AppCompatActivity {
             }
         });
     }
+
     public ArrayList<Model_images> fn_imagespath() {
         al_menu.clear();
 
@@ -173,13 +202,8 @@ public class PhotosActivity extends AppCompatActivity {
                 obj_model.setAl_imagepath(al_path);
 
                 al_menu.add(obj_model);
-
-
             }
-
-
         }
-
 
         for (int i = 0; i < al_menu.size(); i++) {
             Log.e("FOLDER", al_menu.get(i).getStr_folder());
@@ -187,7 +211,7 @@ public class PhotosActivity extends AppCompatActivity {
                 Log.e("FILE", al_menu.get(i).getAl_imagepath().get(j));
             }
         }
-        adapter = new GridViewAdapter(this, al_menu,int_position);
+        adapter = new GridViewAdapter(this, al_menu, int_position);
         gridView.setAdapter(adapter);
         return al_menu;
     }

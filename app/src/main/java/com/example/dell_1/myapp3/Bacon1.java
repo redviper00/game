@@ -11,13 +11,11 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.dell_1.myapp3.ImageViewer.ImageGallery;
 
 import java.io.File;
-
 
 public class Bacon1 extends Activity {
 
@@ -28,8 +26,6 @@ public class Bacon1 extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bacon1);
-
-
     }
 
     private void buttonClicked(View view) {

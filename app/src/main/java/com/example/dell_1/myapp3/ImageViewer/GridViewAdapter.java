@@ -1,6 +1,9 @@
 package com.example.dell_1.myapp3.ImageViewer;
 
 import android.content.Context;
+import android.content.Intent;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +16,10 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.dell_1.myapp3.R;
 
+import java.io.File;
 import java.util.ArrayList;
+
+import static com.example.dell_1.myapp3.ImageViewer.ImageGallery.al_images;
 
 public class GridViewAdapter extends ArrayAdapter<Model_images> {
 
@@ -36,6 +42,25 @@ public class GridViewAdapter extends ArrayAdapter<Model_images> {
         return al_menu.get(int_position).getAl_imagepath().size();
     }
 
+    public void updateUpdater(ArrayList<Integer> mSelected) {
+        for (int selected : mSelected) {
+            File file = new File(al_images.get(int_position).getAl_imagepath().get(selected));
+            file.delete();
+            MediaScannerConnection.scanFile(context,new String[] { file.toString() }, null, new MediaScannerConnection.OnScanCompletedListener()
+            {
+                public void onScanCompleted(String path, Uri uri)
+                {
+                    Log.i("ExternalStorage", "Scanned " + path + ":");
+                    Log.i("ExternalStorage", "-> uri=" + uri);
+                }
+            });
+
+
+                        }
+        notifyDataSetChanged();
+                    }
+
+
     @Override
     public int getItemViewType(int position) {
         return position;
@@ -54,7 +79,6 @@ public class GridViewAdapter extends ArrayAdapter<Model_images> {
     public long getItemId(int position) {
         return position;
     }
-
 
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
@@ -91,4 +115,5 @@ public class GridViewAdapter extends ArrayAdapter<Model_images> {
         ImageView iv_image;
 
     }
+
 }

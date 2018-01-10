@@ -4,17 +4,11 @@ import android.content.Intent;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.ImageView;
-
-import com.bumptech.glide.Glide;
 import com.example.dell_1.myapp3.R;
-import com.github.chrisbanes.photoview.PhotoView;
 
 import static com.example.dell_1.myapp3.ImageViewer.ImageGallery.al_images;
 
 public class FullImageActivity extends AppCompatActivity {
-    ImageView images;
     int position;
     int folderPosition;
 

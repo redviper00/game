@@ -17,6 +17,13 @@
             android:src="@drawable/cut" />
 
         <ImageButton
+            android:id="@+id/buttonpaste"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/paste" />
+
+
+        <ImageButton
             android:id="@+id/button2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -49,12 +56,11 @@
 
     </LinearLayout>
 
-    <GridView
-        android:id="@android:id/list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:numColumns="2"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"></GridView>
-
+       <GridView
+           android:id="@android:id/list"
+           android:layout_width="match_parent"
+           android:layout_height="match_parent"
+           android:numColumns="2"
+           android:layout_marginLeft="10dp"
+           android:layout_marginRight="10dp"></GridView>
 </LinearLayout>
