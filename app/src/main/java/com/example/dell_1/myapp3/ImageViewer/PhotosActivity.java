@@ -19,6 +19,7 @@ import android.widget.ImageButton;
 
 import com.example.dell_1.myapp3.R;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import static com.example.dell_1.myapp3.ImageViewer.ImageGallery.al_images;
@@ -99,8 +100,10 @@ public class PhotosActivity extends AppCompatActivity {
                                 button4.setVisibility(View.GONE);
                                 button5.setVisibility(View.GONE);
                                 Intent moveIntent = new Intent(PhotosActivity.this, ImageGallery.class);
-                                moveIntent.putExtra("selected_images", mSelected);
+                                moveIntent.putExtra("selected_images", getImagePaths(mSelected));
+                                moveIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                 startActivity(moveIntent);
+                                finish();
                             }
                         });
 
@@ -198,7 +201,8 @@ public class PhotosActivity extends AppCompatActivity {
                 ArrayList<String> al_path = new ArrayList<>();
                 al_path.add(absolutePathOfImage);
                 Model_images obj_model = new Model_images();
-                obj_model.setStr_folder(cursor.getString(column_index_folder_name));
+                obj_model.setStr_folder(absolutePathOfImage);
+                obj_model.setDirectoryPath(new File(absolutePathOfImage).getParent());
                 obj_model.setAl_imagepath(al_path);
 
                 al_menu.add(obj_model);
@@ -214,5 +218,13 @@ public class PhotosActivity extends AppCompatActivity {
         adapter = new GridViewAdapter(this, al_menu, int_position);
         gridView.setAdapter(adapter);
         return al_menu;
+    }
+
+    private ArrayList<String> getImagePaths(ArrayList<Integer> selectedIndexList) {
+        ArrayList<String> listOfImages = new ArrayList<>();
+        for(Integer index : selectedIndexList) {
+            listOfImages.add(al_images.get(int_position).getAl_imagepath().get(index));
+        }
+        return listOfImages;
     }
 }
