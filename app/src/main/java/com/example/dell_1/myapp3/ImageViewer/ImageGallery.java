@@ -10,6 +10,7 @@ import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -33,7 +34,7 @@ import java.util.ArrayList;
 
 public class ImageGallery extends AppCompatActivity {
     public static ArrayList<Model_images> al_images = new ArrayList<>();
-    ArrayList<Integer> selectedImages = new ArrayList<>();
+    ArrayList<String> selectedImages = new ArrayList<>();
     boolean boolean_folder;
     Adapter_PhotosFolder obj_adapter;
     GridView gv_folder;
@@ -50,9 +51,8 @@ public class ImageGallery extends AppCompatActivity {
 
         final ImageButton buttonpaste = (ImageButton) findViewById(R.id.buttonpaste);
         buttonpaste.setVisibility(View.GONE);
-        if (getIntent().getParcelableExtra("selected_images") != null)
-            selectedImages = getIntent().getParcelableExtra("selected_images");
-        new LongOperation().execute();
+        if (getIntent().getSerializableExtra("selected_images") != null)
+            selectedImages = (ArrayList<String>) getIntent().getSerializableExtra("selected_images");
 
         final ImageButton buttoncut = (ImageButton) findViewById(R.id.button1);
         final ImageButton button2 = (ImageButton) findViewById(R.id.button2);
@@ -91,18 +91,6 @@ public class ImageGallery extends AppCompatActivity {
                 button3.setVisibility(View.VISIBLE);
                 button4.setVisibility(View.VISIBLE);
                 button5.setVisibility(View.VISIBLE);
-                buttoncut.setOnClickListener(
-                        new View.OnClickListener() {
-                            public void onClick(View view) {
-                                buttoncut.setVisibility(View.GONE);
-                                button2.setVisibility(View.GONE);
-                                button3.setVisibility(View.GONE);
-                                button4.setVisibility(View.GONE);
-                                button5.setVisibility(View.GONE);
-                                buttonpaste.setVisibility(View.VISIBLE);
-                            }
-
-                        });
                 button2.setOnClickListener(
                         new View.OnClickListener() {
                             public void onClick(View view) {
@@ -112,6 +100,7 @@ public class ImageGallery extends AppCompatActivity {
                                 button4.setVisibility(View.GONE);
                                 button5.setVisibility(View.GONE);
                                 buttonpaste.setVisibility(View.VISIBLE);
+                                new LongOperation(i).execute();
                             }
 
                         });
@@ -182,8 +171,9 @@ public class ImageGallery extends AppCompatActivity {
             fn_imagespath();
         }
     }
+  
 
-        public ArrayList<Model_images> fn_imagespath() {
+    public ArrayList<Model_images> fn_imagespath() {
         al_images.clear();
 
         int int_position = 0;
@@ -217,7 +207,7 @@ public class ImageGallery extends AppCompatActivity {
             }
 
 
-            if (boolean_folder) {
+            if (boolean_folder && al_images.size() > 0) {
 
                 ArrayList<String> al_path = new ArrayList<>();
                 al_path.addAll(al_images.get(int_position).getAl_imagepath());
@@ -229,6 +219,7 @@ public class ImageGallery extends AppCompatActivity {
                 al_path.add(absolutePathOfImage);
                 Model_images obj_model = new Model_images();
                 obj_model.setStr_folder(cursor.getString(column_index_folder_name));
+                obj_model.setDirectoryPath(new File(absolutePathOfImage).getParent());
                 obj_model.setAl_imagepath(al_path);
 
                 al_images.add(obj_model);
@@ -241,7 +232,7 @@ public class ImageGallery extends AppCompatActivity {
                 Log.e("FILE", al_images.get(i).getAl_imagepath().get(j));
             }
         }
-        obj_adapter = new Adapter_PhotosFolder(getApplicationContext(),al_images,int_position);
+        obj_adapter = new Adapter_PhotosFolder(getApplicationContext(), al_images, int_position);
         gv_folder.setAdapter(obj_adapter);
         return al_images;
     }
@@ -263,17 +254,26 @@ public class ImageGallery extends AppCompatActivity {
         }
     }
 
-    private class LongOperation extends AsyncTask<String, Void, String> {
+    private class LongOperation extends AsyncTask<String, Void, File> {
+
+        int id;
+
+        public LongOperation(int id){
+            this.id =id;
+        }
 
         @Override
-        protected String doInBackground(String... params) {
+        protected File doInBackground(String... params) {
 
-            for (int image : selectedImages) {
-                File sourceImage = new File(al_images.get(int_position).getAl_imagepath().get(image)); //returns the image File from model class to be moved.
-                File destinationImage = new File(al_images.get(int_position).getStr_folder(), ".jpeg");
+            for (String imagePath : selectedImages) {
+                File sourceImage = new File(imagePath); //returns the image File from model class to
+                // be// moved.
+                File destinationImage = new File(al_images.get(id).getDirectoryPath() +
+                        File.separator + sourceImage.getName());
 
                 try {
-                    copyOrMoveFile(sourceImage, destinationImage,true);
+                    moveFile(sourceImage, destinationImage, true);
+                    return destinationImage;
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -282,25 +282,58 @@ public class ImageGallery extends AppCompatActivity {
         }
 
         @Override
-        protected void onPreExecute() {}
+        protected void onPreExecute() {
+        }
 
+        @Override
+        protected void onPostExecute(File file) {
+            super.onPostExecute(file);
+            notifyMediaStoreScanner(file);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    fn_imagespath();
+                }
+            }, 1000); // additional delay time of 1 sec to update media scanner
+        }
     }
 
-    //Method to move the file
-    private void copyOrMoveFile(File file, File dir,boolean isCopy) throws IOException {
-        File newFile = new File(dir, file.getName());
-        FileChannel outChannel = null;
-        FileChannel inputChannel = null;
-        try {
-            outChannel = new FileOutputStream(newFile).getChannel();
-            inputChannel = new FileInputStream(file).getChannel();
-            inputChannel.transferTo(0, inputChannel.size(), outChannel);
-            inputChannel.close();
-            if(!isCopy)
-                file.delete();
-        } finally {
-            if (inputChannel != null) inputChannel.close();
-            if (outChannel != null) outChannel.close();
+    private void moveFile(File file_Source, File file_Destination, boolean isCopy) throws IOException {
+        FileChannel source = null;
+        FileChannel destination = null;
+        if (!file_Destination.exists()) {
+            file_Destination.createNewFile();
         }
+
+        try {
+            source = new FileInputStream(file_Source).getChannel();
+            destination = new FileOutputStream(file_Destination).getChannel();
+
+            long count = 0;
+            long size = source.size();
+            while ((count += destination.transferFrom(source, count, size - count)) < size) ;
+            if (!isCopy) {
+                file_Source.delete();
+            }
+        } finally {
+            if (source != null) {
+                source.close();
+            }
+            if (destination != null) {
+                destination.close();
+            }
+
+        }
+    }
+
+    public final void notifyMediaStoreScanner(File file) {
+//        try {
+//            MediaStore.Images.Media.insertImage(getBaseContext().getContentResolver(),
+//                    file.getAbsolutePath(), file.getName(), null);
+        getBaseContext().sendBroadcast(new Intent(
+                Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file)));
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
     }
 }

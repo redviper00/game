@@ -8,7 +8,6 @@ import android.graphics.drawable.Drawable;
 import android.support.v4.view.PagerAdapter;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.github.chrisbanes.photoview.PhotoView;
@@ -19,7 +18,7 @@ class TouchImageAdapter extends PagerAdapter {
     Context context;
     String filename;
     ArrayList<Model_images> al_menu = new ArrayList<>();
-    int position,int_position;
+    int int_position;
 
     public TouchImageAdapter(Context context,ArrayList<Model_images> al_menu, int position){
         this.al_menu = al_menu;
@@ -70,7 +69,5 @@ class TouchImageAdapter extends PagerAdapter {
         }
 
         return d;
-
-
     }
 }

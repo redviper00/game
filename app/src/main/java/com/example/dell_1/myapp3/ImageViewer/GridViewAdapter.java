@@ -1,7 +1,6 @@
 package com.example.dell_1.myapp3.ImageViewer;
 
 import android.content.Context;
-import android.content.Intent;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.util.Log;
