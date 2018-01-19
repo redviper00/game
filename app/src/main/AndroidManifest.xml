@@ -52,7 +52,8 @@
             android:screenOrientation="sensor" />
         <activity
             android:name=".ImageViewer.ImageGallery"
-            android:label="@string/title_activity_image_gallery" />
+            android:label="@string/title_activity_image_gallery"
+            />
         <activity
             android:name=".ImageViewer.Adapter_PhotosFolder"
             android:label="@string/title_activity_adapter__photos_folder" />

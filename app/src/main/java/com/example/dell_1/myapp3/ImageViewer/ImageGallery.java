@@ -1,6 +1,7 @@
 package com.example.dell_1.myapp3.ImageViewer;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -27,6 +28,7 @@ import com.example.dell_1.myapp3.R;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -100,7 +102,11 @@ public class ImageGallery extends AppCompatActivity {
                                 button4.setVisibility(View.GONE);
                                 button5.setVisibility(View.GONE);
                                 buttonpaste.setVisibility(View.VISIBLE);
+<<<<<<< HEAD
                                 new LongOperation(i).execute();
+=======
+                                new LongOperation().execute();
+>>>>>>> 5af56b9973f5918c753f0ec3a5ea90a69f1d00bb
                             }
 
                         });
@@ -255,12 +261,15 @@ public class ImageGallery extends AppCompatActivity {
     }
 
     private class LongOperation extends AsyncTask<String, Void, File> {
+<<<<<<< HEAD
 
         int id;
 
         public LongOperation(int id){
             this.id =id;
         }
+=======
+>>>>>>> 5af56b9973f5918c753f0ec3a5ea90a69f1d00bb
 
         @Override
         protected File doInBackground(String... params) {
@@ -268,7 +277,11 @@ public class ImageGallery extends AppCompatActivity {
             for (String imagePath : selectedImages) {
                 File sourceImage = new File(imagePath); //returns the image File from model class to
                 // be// moved.
+<<<<<<< HEAD
                 File destinationImage = new File(al_images.get(id).getDirectoryPath() +
+=======
+                File destinationImage = new File(al_images.get(int_position).getDirectoryPath() +
+>>>>>>> 5af56b9973f5918c753f0ec3a5ea90a69f1d00bb
                         File.separator + sourceImage.getName());
 
                 try {
@@ -330,8 +343,13 @@ public class ImageGallery extends AppCompatActivity {
 //        try {
 //            MediaStore.Images.Media.insertImage(getBaseContext().getContentResolver(),
 //                    file.getAbsolutePath(), file.getName(), null);
+<<<<<<< HEAD
         getBaseContext().sendBroadcast(new Intent(
                 Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file)));
+=======
+            getBaseContext().sendBroadcast(new Intent(
+                    Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file)));
+>>>>>>> 5af56b9973f5918c753f0ec3a5ea90a69f1d00bb
 //        } catch (FileNotFoundException e) {
 //            e.printStackTrace();
 //        }
