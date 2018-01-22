@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -13,9 +14,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageButton;
-import android.widget.Toast;
+import android.widget.LinearLayout;
 
 import com.example.dell_1.myapp3.R;
 
@@ -27,6 +29,7 @@ import static com.example.dell_1.myapp3.ImageViewer.ImageGallery.al_images;
 public class PhotosActivity extends AppCompatActivity {
     int int_position;
     private GridView gridView;
+    private static final String  TAG = " com.example.dell_1.myapp3.ImageViewer";
     GridViewAdapter adapter;
     ArrayList<Model_images> al_menu = new ArrayList<>();
     private ArrayList<Integer> mSelected = new ArrayList<>();
@@ -151,8 +154,55 @@ public class PhotosActivity extends AppCompatActivity {
                             }
                         });
 
+                button4.setOnClickListener(
+                        new View.OnClickListener(){
+                            public void onClick(View view){
+                                AlertDialog.Builder builder2 = new AlertDialog.Builder(PhotosActivity.this);
+                                builder2.setMessage("Rename File");
+                                final EditText input = new EditText(PhotosActivity.this);
+                                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                                        LinearLayout.LayoutParams.MATCH_PARENT,
+                                        LinearLayout.LayoutParams.MATCH_PARENT);
+                                input.setLayoutParams(lp);
+                                builder2.setView(input);
+                                builder2.setPositiveButton(
+                                        "Rename",
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                File oldName =new File(al_images.get(int_position).getAl_imagepath().get(position));
+                                                String string = input.getText().toString();
+                                                File newFile = new File(string);
+                                                if(!newFile.exists()){
+                                                    boolean success = oldName.renameTo(newFile);
+                                                    if(!success){
+                                                        Log.v(TAG,"not renamed");
+                                                    }
+                                                }else{
+                                                    Log.e(TAG, "file is already exist");
+                                                }
+                                                }
+                                            });
+
+
+                                builder2.setNegativeButton(
+                                        "Cancel",
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                dialog.cancel();
+                                            }
+                                        });
+
+                                AlertDialog alert12 = builder2.create();
+                                alert12.show();
+
+                            }
+                        }
+                );
+
                 return true;
             }
+
+
         });
     }
 
@@ -225,6 +275,9 @@ public class PhotosActivity extends AppCompatActivity {
         for(Integer index : selectedIndexList) {
             listOfImages.add(al_images.get(int_position).getAl_imagepath().get(index));
         }
+
         return listOfImages;
+
+
     }
 }

@@ -36,6 +36,7 @@ public class ImageGallery extends AppCompatActivity {
     public static ArrayList<Model_images> al_images = new ArrayList<>();
     ArrayList<String> selectedImages = new ArrayList<>();
     boolean boolean_folder;
+    private static final String  TAG = " com.example.dell_1.myapp3.ImageViewer";
     Adapter_PhotosFolder obj_adapter;
     GridView gv_folder;
     private static final int REQUEST_PERMISSIONS = 100;
@@ -53,6 +54,7 @@ public class ImageGallery extends AppCompatActivity {
         buttonpaste.setVisibility(View.GONE);
         if (getIntent().getSerializableExtra("selected_images") != null)
             selectedImages = (ArrayList<String>) getIntent().getSerializableExtra("selected_images");
+        Log.v(TAG, "The size of arraylist "+ selectedImages.size());
 
         final ImageButton buttoncut = (ImageButton) findViewById(R.id.button1);
         final ImageButton button2 = (ImageButton) findViewById(R.id.button2);
@@ -172,7 +174,7 @@ public class ImageGallery extends AppCompatActivity {
             fn_imagespath();
         }
     }
-  
+
 
     public ArrayList<Model_images> fn_imagespath() {
         al_images.clear();
@@ -257,7 +259,9 @@ public class ImageGallery extends AppCompatActivity {
 
     private class LongOperation extends AsyncTask<String, Void, File> {
 
-        int id;
+        int id,count=0;
+        File destinationImage;
+        private static final String  TAG = " com.example.dell_1.myapp3.ImageViewer";
 
         public LongOperation(int id){
             this.id =id;
@@ -271,18 +275,21 @@ public class ImageGallery extends AppCompatActivity {
                 File sourceImage = new File(imagePath); //returns the image File from model class to
                 // be// moved.
 
-                File destinationImage = new File(al_images.get(id).getDirectoryPath() +
+                count++;
+                Log.v(TAG, "The size "+ count);
+                destinationImage = new File(al_images.get(id).getDirectoryPath() +
                         File.separator + sourceImage.getName());
 
                 try {
-                    moveFile(sourceImage, destinationImage, true);
-                    return destinationImage;
+                    moveFile(sourceImage, destinationImage, false);
+                    notifyMediaStoreScanner(destinationImage);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-            return null;
+            return destinationImage;
         }
+
 
         @Override
         protected void onPreExecute() {
@@ -291,7 +298,6 @@ public class ImageGallery extends AppCompatActivity {
         @Override
         protected void onPostExecute(File file) {
             super.onPostExecute(file);
-            notifyMediaStoreScanner(file);
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -317,6 +323,14 @@ public class ImageGallery extends AppCompatActivity {
             while ((count += destination.transferFrom(source, count, size - count)) < size) ;
             if (!isCopy) {
                 file_Source.delete();
+                MediaScannerConnection.scanFile(this,
+                        new String[] { file_Source.toString() }, null,
+                        new MediaScannerConnection.OnScanCompletedListener() {
+                            public void onScanCompleted(String path, Uri uri) {
+                                Log.i("ExternalStorage", "Scanned " + path + ":");
+                                Log.i("ExternalStorage", "-> uri=" + uri);
+                            }
+                        });
             }
         } finally {
             if (source != null) {
@@ -325,7 +339,6 @@ public class ImageGallery extends AppCompatActivity {
             if (destination != null) {
                 destination.close();
             }
-
         }
     }
 
