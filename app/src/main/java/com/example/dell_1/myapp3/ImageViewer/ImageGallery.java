@@ -1,6 +1,7 @@
 package com.example.dell_1.myapp3.ImageViewer;
 
 import android.Manifest;
+import android.app.ActionBar;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -16,7 +17,10 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
@@ -36,9 +40,10 @@ public class ImageGallery extends AppCompatActivity {
     public static ArrayList<Model_images> al_images = new ArrayList<>();
     ArrayList<String> selectedImages = new ArrayList<>();
     boolean boolean_folder;
-    private static final String  TAG = " com.example.dell_1.myapp3.ImageViewer";
+    private static final String TAG = " com.example.dell_1.myapp3.ImageViewer";
     Adapter_PhotosFolder obj_adapter;
     GridView gv_folder;
+    MenuItem mSort, mSettings, mRename, mSelectAll, mProperties;
     private static final int REQUEST_PERMISSIONS = 100;
     int int_position;
 
@@ -50,22 +55,24 @@ public class ImageGallery extends AppCompatActivity {
         obj_adapter = new Adapter_PhotosFolder(this, al_images, int_position);
         gv_folder.setAdapter(obj_adapter);
 
+        Toolbar topToolBar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(topToolBar);
+        topToolBar.setLogoDescription(getResources().getString(R.string.logo_desc));
+
         final ImageButton buttonpaste = (ImageButton) findViewById(R.id.buttonpaste);
         buttonpaste.setVisibility(View.GONE);
         if (getIntent().getSerializableExtra("selected_images") != null)
             selectedImages = (ArrayList<String>) getIntent().getSerializableExtra("selected_images");
-        Log.v(TAG, "The size of arraylist "+ selectedImages.size());
+        Log.v(TAG, "The size of arraylist " + selectedImages.size());
 
         final ImageButton buttoncut = (ImageButton) findViewById(R.id.button1);
         final ImageButton button2 = (ImageButton) findViewById(R.id.button2);
         final ImageButton button3 = (ImageButton) findViewById(R.id.button3);
         final ImageButton button4 = (ImageButton) findViewById(R.id.button4);
-        final ImageButton button5 = (ImageButton) findViewById(R.id.button5);
         buttoncut.setVisibility(View.GONE);
         button2.setVisibility(View.GONE);
         button3.setVisibility(View.GONE);
         button4.setVisibility(View.GONE);
-        button5.setVisibility(View.GONE);
 
         gv_folder.setOnItemClickListener(new AdapterView.OnItemClickListener()
 
@@ -88,11 +95,13 @@ public class ImageGallery extends AppCompatActivity {
 
                 // change the background color of the selected element
                 view.setBackgroundColor(Color.LTGRAY);
+
+                hideMenuItem();
+
                 buttoncut.setVisibility(View.VISIBLE);
                 button2.setVisibility(View.VISIBLE);
                 button3.setVisibility(View.VISIBLE);
                 button4.setVisibility(View.VISIBLE);
-                button5.setVisibility(View.VISIBLE);
                 button2.setOnClickListener(
                         new View.OnClickListener() {
                             public void onClick(View view) {
@@ -100,7 +109,6 @@ public class ImageGallery extends AppCompatActivity {
                                 button2.setVisibility(View.GONE);
                                 button3.setVisibility(View.GONE);
                                 button4.setVisibility(View.GONE);
-                                button5.setVisibility(View.GONE);
                                 buttonpaste.setVisibility(View.VISIBLE);
 
                                 new LongOperation(i).execute();
@@ -259,12 +267,12 @@ public class ImageGallery extends AppCompatActivity {
 
     private class LongOperation extends AsyncTask<String, Void, File> {
 
-        int id,count=0;
+        int id, count = 0;
         File destinationImage;
-        private static final String  TAG = " com.example.dell_1.myapp3.ImageViewer";
+        private static final String TAG = " com.example.dell_1.myapp3.ImageViewer";
 
-        public LongOperation(int id){
-            this.id =id;
+        public LongOperation(int id) {
+            this.id = id;
         }
 
 
@@ -276,7 +284,7 @@ public class ImageGallery extends AppCompatActivity {
                 // be// moved.
 
                 count++;
-                Log.v(TAG, "The size "+ count);
+                Log.v(TAG, "The size " + count);
                 destinationImage = new File(al_images.get(id).getDirectoryPath() +
                         File.separator + sourceImage.getName());
 
@@ -324,7 +332,7 @@ public class ImageGallery extends AppCompatActivity {
             if (!isCopy) {
                 file_Source.delete();
                 MediaScannerConnection.scanFile(this,
-                        new String[] { file_Source.toString() }, null,
+                        new String[]{file_Source.toString()}, null,
                         new MediaScannerConnection.OnScanCompletedListener() {
                             public void onScanCompleted(String path, Uri uri) {
                                 Log.i("ExternalStorage", "Scanned " + path + ":");
@@ -348,10 +356,62 @@ public class ImageGallery extends AppCompatActivity {
 //                    file.getAbsolutePath(), file.getName(), null);
         getBaseContext().sendBroadcast(new Intent(
                 Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file)));
-            getBaseContext().sendBroadcast(new Intent(
-                    Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file)));
+        getBaseContext().sendBroadcast(new Intent(
+                Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file)));
 //        } catch (FileNotFoundException e) {
 //            e.printStackTrace();
 //        }
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.actionmenu, menu);
+        mSort = menu.findItem(R.id.action_sort);
+        mSettings = menu.findItem(R.id.action_settings);
+        mRename = menu.findItem(R.id.action_rename);
+        mRename.setVisible(false);
+        mSelectAll = menu.findItem(R.id.action_selectAll);
+        mSelectAll.setVisible(false);
+        mProperties = menu.findItem(R.id.action_properties);
+        mProperties.setVisible(false);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Take appropriate action for each action item click
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                // search action
+                return true;
+
+            case R.id.action_sort:
+                // location found
+                return true;
+
+            case R.id.action_rename:
+                // location found
+                return true;
+
+            case R.id.action_selectAll:
+                // location found
+                return true;
+
+            case R.id.action_properties:
+                // location found
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void hideMenuItem(){
+        mSort.setVisible(false);
+        mSettings.setVisible(false);
+        mRename.setVisible(true);
+        mSelectAll.setVisible(true);
+        mProperties.setVisible(true);
     }
 }

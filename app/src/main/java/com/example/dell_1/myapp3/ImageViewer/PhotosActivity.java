@@ -6,11 +6,14 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
@@ -18,11 +21,17 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.dell_1.myapp3.Bacon1;
 import com.example.dell_1.myapp3.R;
 
+
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import static com.example.dell_1.myapp3.ImageViewer.ImageGallery.al_images;
 
@@ -32,8 +41,14 @@ public class PhotosActivity extends AppCompatActivity {
     private static final String  TAG = " com.example.dell_1.myapp3.ImageViewer";
     GridViewAdapter adapter;
     ArrayList<Model_images> al_menu = new ArrayList<>();
+    Uri uri;
+    Cursor cursor;
+    int column_index_data, column_index_folder_name;
+
     private ArrayList<Integer> mSelected = new ArrayList<>();
+    String absolutePathOfImage;
     boolean boolean_folder;
+    MenuItem mSort,mSettings,mRename,mSelectAll, mProperties ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,13 +59,11 @@ public class PhotosActivity extends AppCompatActivity {
         final ImageButton button2 = (ImageButton) findViewById(R.id.button2);
         final ImageButton button3 = (ImageButton) findViewById(R.id.button3);
         final ImageButton button4 = (ImageButton) findViewById(R.id.button4);
-        final ImageButton button5 = (ImageButton) findViewById(R.id.button5);
         final ImageButton buttonpaste = (ImageButton) findViewById(R.id.buttonpaste);
         buttoncut.setVisibility(View.GONE);
         button2.setVisibility(View.GONE);
         button3.setVisibility(View.GONE);
         button4.setVisibility(View.GONE);
-        button5.setVisibility(View.GONE);
         buttonpaste.setVisibility(View.GONE);
 
 
@@ -60,6 +73,11 @@ public class PhotosActivity extends AppCompatActivity {
         adapter = new GridViewAdapter(this, al_images, int_position);
         gridView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
         gridView.setAdapter(adapter);
+
+        Toolbar topToolBar = (Toolbar)findViewById(R.id.toolbar);
+        setSupportActionBar(topToolBar);
+        topToolBar.setLogoDescription(getResources().getString(R.string.logo_desc));
+
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -89,11 +107,12 @@ public class PhotosActivity extends AppCompatActivity {
                     // eg: add highlight
                 }
 
+                hideMenuItem();
+
                 buttoncut.setVisibility(View.VISIBLE);
                 button2.setVisibility(View.VISIBLE);
                 button3.setVisibility(View.VISIBLE);
                 button4.setVisibility(View.VISIBLE);
-                button5.setVisibility(View.VISIBLE);
                 buttoncut.setOnClickListener(
                         new View.OnClickListener() {
                             public void onClick(View view) {
@@ -101,7 +120,6 @@ public class PhotosActivity extends AppCompatActivity {
                                 button2.setVisibility(View.GONE);
                                 button3.setVisibility(View.GONE);
                                 button4.setVisibility(View.GONE);
-                                button5.setVisibility(View.GONE);
                                 Intent moveIntent = new Intent(PhotosActivity.this, ImageGallery.class);
                                 moveIntent.putExtra("selected_images", getImagePaths(mSelected));
                                 moveIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -117,8 +135,6 @@ public class PhotosActivity extends AppCompatActivity {
                                 button2.setVisibility(View.GONE);
                                 button3.setVisibility(View.GONE);
                                 button4.setVisibility(View.GONE);
-                                button5.setVisibility(View.GONE);
-
                             }
 
                         });
@@ -157,43 +173,7 @@ public class PhotosActivity extends AppCompatActivity {
                 button4.setOnClickListener(
                         new View.OnClickListener(){
                             public void onClick(View view){
-                                AlertDialog.Builder builder2 = new AlertDialog.Builder(PhotosActivity.this);
-                                builder2.setMessage("Rename File");
-                                final EditText input = new EditText(PhotosActivity.this);
-                                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                                        LinearLayout.LayoutParams.MATCH_PARENT,
-                                        LinearLayout.LayoutParams.MATCH_PARENT);
-                                input.setLayoutParams(lp);
-                                builder2.setView(input);
-                                builder2.setPositiveButton(
-                                        "Rename",
-                                        new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int id) {
-                                                File oldName =new File(al_images.get(int_position).getAl_imagepath().get(position));
-                                                String string = input.getText().toString();
-                                                File newFile = new File(string);
-                                                if(!newFile.exists()){
-                                                    boolean success = oldName.renameTo(newFile);
-                                                    if(!success){
-                                                        Log.v(TAG,"not renamed");
-                                                    }
-                                                }else{
-                                                    Log.e(TAG, "file is already exist");
-                                                }
-                                                }
-                                            });
 
-
-                                builder2.setNegativeButton(
-                                        "Cancel",
-                                        new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int id) {
-                                                dialog.cancel();
-                                            }
-                                        });
-
-                                AlertDialog alert12 = builder2.create();
-                                alert12.show();
 
                             }
                         }
@@ -210,18 +190,14 @@ public class PhotosActivity extends AppCompatActivity {
         al_menu.clear();
 
         int int_position = 0;
-        Uri uri;
-        Cursor cursor;
-        int column_index_data, column_index_folder_name;
 
-        String absolutePathOfImage;
+
         uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 
         String[] projection = {MediaStore.MediaColumns.DATA, MediaStore.Images.Media.BUCKET_DISPLAY_NAME};
 
         final String orderBy = MediaStore.Images.Media.DATE_TAKEN;
         cursor = getApplication().getContentResolver().query(uri, projection, null, null, orderBy + " DESC");
-
         column_index_data = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
         column_index_folder_name = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME);
         while (cursor.moveToNext()) {
@@ -277,7 +253,171 @@ public class PhotosActivity extends AppCompatActivity {
         }
 
         return listOfImages;
-
-
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.actionmenu, menu);
+        mSort = menu.findItem(R.id.action_sort);
+        mSettings = menu.findItem(R.id.action_settings);
+        mRename = menu.findItem(R.id.action_rename);
+        mRename.setVisible(false);
+        mSelectAll = menu.findItem(R.id.action_selectAll);
+        mSelectAll.setVisible(false);
+        mProperties = menu.findItem(R.id.action_properties);
+        mProperties.setVisible(false);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Take appropriate action for each action item click
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                // search action
+                return true;
+
+            case R.id.action_sort:
+                // location found
+                return true;
+
+            case R.id.action_rename:
+                renameFile();
+                // location found
+                return true;
+
+            case R.id.action_selectAll:
+
+                GridViewAdapter.Interface inter = new GridViewAdapter.Interface() {
+                    @Override
+                    public void convert(View convertView) {
+                        Toast.makeText(PhotosActivity.this, "WRITE_CONTACTS granted", Toast.LENGTH_SHORT)
+                                .show();
+                        File file2 = new File(al_images.get(int_position).getDirectoryPath());
+                        if (file2.isDirectory()) {
+                            String[] fileNames = file2.list();
+                            for (int a = 0; a < fileNames.length; a++) {
+                                convertView.setBackgroundColor(Color.LTGRAY);
+                            }
+                        }
+                    }
+                };
+                // location found
+                return true;
+
+            case R.id.action_properties:
+                AlertDialog.Builder builder = new AlertDialog.Builder(PhotosActivity.this);
+                LayoutInflater inflater = this.getLayoutInflater();
+                builder.setMessage("Properties");
+                builder.setView(R.layout.properties);
+                View dialogView = inflater.inflate(R.layout.properties, null);
+                builder.setView(dialogView);
+                TextView displayname = (TextView) dialogView.findViewById(R.id.displayname);
+                TextView displaysize = (TextView) dialogView.findViewById(R.id.displaysize);
+                TextView displaylastmodified = (TextView) dialogView.findViewById(R.id.displaylastmodified);
+                TextView displaydatetaken = (TextView) dialogView.findViewById(R.id.displaydatetaken);
+                TextView displaypath  = (TextView) dialogView.findViewById(R.id.displaypath);
+                for(int i: mSelected){
+                    File file = new File(al_images.get(int_position).getAl_imagepath().get(i));
+                    float fileSizeInBytes = file.length();
+                    String calString = Float.toString(fileSizeInBytes);
+                    displaysize.setText(calString + " bytes");
+                    if(fileSizeInBytes>1024){
+                        float fileSizeInKB = fileSizeInBytes / 1024;
+                        String calString2 = Float.toString(fileSizeInKB);
+                        displaysize.setText(calString2 + " KB");
+                        if(fileSizeInKB>1024){
+                            float fileSizeInMB = fileSizeInKB / 1024;
+                            String calString3 = Float.toString(fileSizeInMB);
+                            displaysize.setText(calString3 + " MB");
+                        }
+                    }
+                    String strFileName = file.getName();
+                    displayname.setText(strFileName);
+
+
+                    Date lastModified = new Date(file.lastModified());
+                    SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                    String formattedDateString = formatter.format(lastModified);
+                    displaylastmodified.setText(formattedDateString);
+                    displaydatetaken.setText(formattedDateString);
+
+                    String path = al_images.get(int_position).getAl_imagepath().get(i);
+                    displaypath.setText(path);
+
+                }
+                builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+                AlertDialog alert12 = builder.create();
+                alert12.show();
+            // location found
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void hideMenuItem(){
+        mSort.setVisible(false);
+        mSettings.setVisible(false);
+        mRename.setVisible(true);
+        if (mSelected.size()>1){
+            mRename.setVisible(false);
+        }
+        mSelectAll.setVisible(true);
+        mProperties.setVisible(true);
+        if (mSelected.size()>1){
+            mProperties.setVisible(false);
+        }
+    }
+
+    private void renameFile(){
+        AlertDialog.Builder builder2 = new AlertDialog.Builder(PhotosActivity.this);
+        builder2.setMessage("Rename File");
+        final EditText input = new EditText(PhotosActivity.this);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT);
+        input.setLayoutParams(lp);
+        builder2.setView(input);
+        builder2.setPositiveButton(
+                "Rename",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        for (int selected : mSelected) {
+                            File oldName = new File(al_images.get(int_position).getAl_imagepath().get(selected));
+                            String string = input.getText().toString();
+                            File newFile = new File(string);
+                            if (!newFile.exists()) {
+                                boolean success = oldName.renameTo(newFile);
+                                if (!success) {
+                                    Log.v(TAG, "not renamed");
+                                }
+                            } else {
+                                Log.e(TAG, "file is already exist");
+                            }
+                        }
+                    }
+                });
+
+
+        builder2.setNegativeButton(
+                "Cancel",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alert12 = builder2.create();
+        alert12.show();
+    }
+
+
+
 }

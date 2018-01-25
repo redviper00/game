@@ -1,7 +1,18 @@
 <resources>
     <string name="app_name">MyApp3</string>
     <string name="action_settings">Settings</string>
+    <string name="action_sort">Sort</string>
+    <string name="action_rename">Rename</string>
+    <string name="action_selectAll">Select All</string>
+    <string name="action_properties">Properties</string>
+    <string name="action_menu">Settings</string>
+    <string-array name="dropdown">
+        <item>First Item</item>
+        <item>Second Item</item>
+        <item>Third Item</item>
+    </string-array>
     <string name="button1">Internal Storage</string>
+    <string name="logo_desc">App logo</string>
     <string name="button_internal">Internal Storage</string>
     <string name="title_activity_bacon1">Bacon1</string>
     <string name="button_images">images</string>

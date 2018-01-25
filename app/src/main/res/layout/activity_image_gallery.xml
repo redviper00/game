@@ -9,6 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_alignParentTop="true"
+        android:background="@color/colorPrimary"
         >
         <ImageButton
             android:id="@+id/button1"
@@ -44,16 +45,18 @@
             android:id="@+id/button4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/rename"
+            android:src="@drawable/share"
             android:layout_marginLeft="33dp"/>
 
-        <ImageButton
-            android:id="@+id/button5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/more"
-            android:layout_marginLeft="37dp"
-            />
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:minHeight="?attr/actionBarSize"
+            android:background="@color/colorPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="64dp">
+        </android.support.v7.widget.Toolbar>
+
 
     </LinearLayout>
 
